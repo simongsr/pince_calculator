@@ -1,0 +1,150 @@
+/**
+ * Pince calculator
+ * @author Simone Pandolfi <simopandolfi@gmail.com>
+ */
+
+
+var w = view.size.width,
+    h = view.size.height;
+
+
+function drawPath() {
+    var fact = h / parseInt($("#model-data input[name='lunghezza_seno']:first").val()),
+        a = h,
+        b = (parseInt($("#model-data input[name='lunghezza_seno']:first").val()) - 8) * fact,
+        c = parseInt($("#model-data input[name='larghezza_spalla']:first").val()) * fact,
+        d = parseInt($("#model-data input[name='gap']:first").val()) * fact,
+        e = parseInt($("#model-data input[name='meta_abbassamento_giro']:first").val()) * fact;
+
+    var alpha = Math.acos((-(c * c) + a * a + b * b) / (2 * a * b)),
+        beta = Math.acos((-(a * a) + b * b + c * c) / (2 * b * c)),
+        gamma = Math.acos((-(b * b) + a * a + c * c) / (2 * a * c)),
+        delta = Math.asin(parseInt($("#model-data input[name='hgap']:first").val()) / parseInt($("#model-data input[name='gap']:first").val()));
+
+    var A = new Point(w * 3 / 4, h),
+        B = new Point(A.x - b * Math.sin(alpha), c * Math.cos(gamma)),
+        C = new Point(w * 3 / 4, 0),
+        D = new Point(B.x - d * Math.cos(delta), B.y + d * Math.sin(delta)),
+        E = new Point(D.x, D.y + e);
+
+    var x_F = (A.x - B.x) * ((E.y - B.y) / (A.y - B.y)) + B.x,
+        F = new Point(x_F, (A.y - B.y) * ((x_F - B.x) / (A.x - B.x)) + B.y),
+        AF = Math.sqrt(Math.pow(A.x - F.x, 2) + Math.pow(A.y - F.y, 2));
+
+    var pince_len = AF * Math.sin(alpha);
+
+
+    project.activeLayer.removeChildren();
+
+
+    var path = new Path();
+
+    path.strokeColor = '#21B3FC';
+
+    path.add(B);
+    path.add(C);
+    path.add(A);
+    path.add(B);
+    path.add(D);
+    path.add(E);
+
+    path.fullySelected = true;
+
+    var aText = new PointText(new Point(A.x + 5, (A.y - C.y) / 2 - 25));
+    aText.fillColor = 'black';
+    aText.content = a / fact + 'mm';
+
+    var bText = new PointText(new Point(B.x - 10, (A.y - B.y) / 2));
+    bText.fillColor = 'black';
+    bText.content = b / fact + 'mm';
+
+    var cText = new PointText(new Point(B.x, (B.y - C.y) / 2));
+    cText.fillColor = 'black';
+    cText.content = c / fact + 'mm';
+
+    var dText = new PointText(new Point(D.x + (B.x - D.x) / 2, B.y + (D.y - B.y) / 2 + 13));
+    dText.fillColor = 'black';
+    dText.content = d / fact + 'mm';
+
+    var eText = new PointText(new Point(D.x + 5, D.y + (E.y - D.y) / 2));
+    eText.fillColor = 'black';
+    eText.content = e / fact + 'mm';
+
+
+
+    var pince = new Path();
+
+    pince.strokeColor = 'red';
+
+    pince.add(F);
+    pince.add(new Point(F.x + pince_len, F.y));
+
+    var pinceText = new PointText(new Point(A.x + 5, F.y));
+    pinceText.fillColor = 'red';
+    pinceText.content = Math.ceil(pince_len / fact) + 'mm';
+
+
+    var pinceTop = new Path();
+
+    pinceTop.strokeColor = 'red';
+
+    pinceTop.add(B);
+    pinceTop.add(new Point(A.x, B.y));
+
+    var pinceTopText = new PointText(new Point(A.x + 5, B.y));
+    pinceTopText.fillColor = 'red';
+    pinceTopText.content = Math.ceil((A.x - B.x) / fact) + 'mm';
+
+
+
+    var cst1 = new Path();
+
+    cst1.strokeColor = 'black';
+    cst1.dashArray = [10, 12];
+
+    cst1.add(B);
+    cst1.add(new Point(D.x, B.y));
+    cst1.add(D);
+
+    var gapText = new PointText(new Point(D.x + (B.x - D.x) / 2 - 15, B.y - 5));
+    gapText.fillColor = 'grey';
+    gapText.content = Math.ceil((B.x - D.x) / fact) + 'mm';
+
+    var hgapText = new PointText(new Point(D.x + 5, B.y + (D.y - B.y) / 2));
+    hgapText.fillColor = 'grey';
+    hgapText.content = Math.ceil((D.y - B.y) / fact) + 'mm';
+
+
+    var cst2 = new Path();
+
+    cst2.strokeColor = 'black';
+    cst2.dashArray = [10, 12];
+
+    cst2.add(E);
+    cst2.add(F);
+
+    var cst2Text = new PointText(new Point(E.x + (F.x - E.x) / 2 - 10, E.y - 5));
+    cst2Text.fillColor = 'grey';
+    cst2Text.content = Math.ceil((F.x - E.x) / fact) + 'mm';
+
+
+
+    view.draw();
+}
+
+drawPath();
+
+$("#model-data").submit(function(ev) {
+    ev.preventDefault();
+    drawPath();
+});
+
+$("#model-data input[type='text']").keydown(function(ev) {
+    if ((ev.keyCode < 48 || ev.keyCode > 57) && 
+    (ev.keyCode != 8) && 
+    (ev.keyCode != 9) && 
+    (ev.keyCode != 13) &&
+    (ev.keyCode != 37) &&
+    (ev.keyCode != 39) && 
+    (ev.keyCode != 116)) ev.preventDefault();
+});

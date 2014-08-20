@@ -143,20 +143,12 @@ function drawPath() {
     path.add(O);
     path.strokeColor = 'red';
 
-<<<<<<< HEAD
     pince_len = dist(N, O) / 10;
-=======
-    pince_len = dist(N, O);
->>>>>>> 45564a2ee01897f856fc2a9492633868622f9dfb
 
     var text = new PointText(new Point(O.x + 5, O.y)),
         txt = '' + pince_len;
     text.fillColor = 'red';
-<<<<<<< HEAD
     text.content = txt.substring(0, txt.indexOf('.') + 4) + 'cm';
-=======
-    text.content = txt.substring(0, txt.indexOf('.') + 4) + 'mm';
->>>>>>> 45564a2ee01897f856fc2a9492633868622f9dfb
 
     
     var line = new Path();
